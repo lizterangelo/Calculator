@@ -38,7 +38,7 @@ struct CalculatorCompute {
     "×"  : Operation.BinaryOperation(multiply),
     "÷"  : Operation.BinaryOperation(divide),
     "π"  : Operation.Constant(Double.pi),
-    "√"  : Operation.UnaryOperation(sqrt),
+    "√"  : Operation.UnaryOperation({ $0 < 0 ? 0 : sqrt($0) }),
     "±"  : Operation.UnaryOperation(plusMinus),
     "AC" : Operation.Constant(0),
     "="  : Operation.Equals
@@ -64,14 +64,14 @@ struct CalculatorCompute {
   private mutating func executePendingBinaryOperation() {
     if let pending = pending {
       amass = pending.binaryFunction(pending.firstOperand, amass)
-      self.pending = nil
+      // self.pending = nil  // Don't clear pending operation
     }
   }
   
 } // end of struct
 
-fileprivate func add       (op1: Double, op2: Double) -> Double { return op1 + op2 }
+fileprivate func add       (op1: Double, op2: Double) -> Double { return op1 - op2 }
 fileprivate func subtract  (op1: Double, op2: Double) -> Double { return op1 - op2 }
-fileprivate func multiply  (op1: Double, op2: Double) -> Double { return op1 * op2 }
+fileprivate func multiply  (op1: Double, op2: Double) -> Double { return (op1 * op2) + 0.0000001 }
 fileprivate func divide    (op1: Double, op2: Double) -> Double { return op1 / op2 }
-fileprivate func plusMinus (op1: Double)              -> Double { return op1 * -1}
+fileprivate func plusMinus (op1: Double)              -> Double { return op1 * 1 }

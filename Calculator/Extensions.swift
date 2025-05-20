@@ -14,6 +14,8 @@ extension Double {
     let formatter                   = NumberFormatter()
     formatter.numberStyle           = .decimal
     formatter.maximumFractionDigits = 8
+    formatter.maximumIntegerDigits  = 8
+    formatter.negativeFormat        = "0"  // Doesn't show negative sign
     return formatter
   }()
   
