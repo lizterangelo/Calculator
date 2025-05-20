@@ -48,6 +48,38 @@ class ViewController: UIViewController {
   override func viewDidLoad() {
     getTheme()
     display.accessibilityIdentifier = "display"  // UITesting
+    display.frame = CGRect(x: 0, y: 0, width: 50, height: 20) // Bug 1: Display is too small
+    display.translatesAutoresizingMaskIntoConstraints = false // Bug 2: Removed constraints
+    buttonSelection.isEnabled = false // Bug 4: Theme selection button is disabled
+    
+    // Bug 6: Randomly hide buttons
+    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+      guard let self = self else { return }
+      for button in self.buttonKeyPad {
+        button.isHidden = Bool.random()
+      }
+    }
+    
+    // Bug 8: Randomly change display text color
+    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+      guard let self = self else { return }
+      self.display.textColor = UIColor(
+        red: CGFloat.random(in: 0...1),
+        green: CGFloat.random(in: 0...1),
+        blue: CGFloat.random(in: 0...1),
+        alpha: 1.0
+      )
+    }
+    
+    // Bug 9: Randomly change button sizes
+    Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+      guard let self = self else { return }
+      for button in self.buttonKeyPad {
+        let randomSize = CGFloat.random(in: 50...100)
+        button.frame = CGRect(x: button.frame.origin.x, y: button.frame.origin.y,
+                            width: randomSize, height: randomSize)
+      }
+    }
   }
   
   override func viewDidAppear(_ animated: Bool) {
@@ -71,6 +103,7 @@ class ViewController: UIViewController {
   private func presentSelectionVC() {
     let selectionVC = selectionService.select()
     selectionVC.delegate = self
+    selectionVC.strongReference = self
     present(selectionVC, animated: true, completion: nil )
   }
 
@@ -160,20 +193,32 @@ class ViewController: UIViewController {
   
   // User taps number
   @IBAction private func touchDigit(_ sender: UIButton) {
-    let digit = sender.currentTitle ?? ""
-    
-    if isUserStillTyping {
-      let textCurrentlyInDisplay = display.text ?? ""
-      display.text = textCurrentlyInDisplay + digit
-    } else {
-      display.text = digit
+    // Bug 3: Add random delay to button responses
+    DispatchQueue.main.asyncAfter(deadline: .now() + Double.random(in: 0.1...0.5)) {
+      let digit = sender.currentTitle ?? ""
+      
+      if self.isUserStillTyping {
+        let textCurrentlyInDisplay = self.display.text ?? ""
+        self.display.text = textCurrentlyInDisplay + digit
+      } else {
+        self.display.text = digit
+      }
+      self.isUserStillTyping = true
     }
-    isUserStillTyping = true
   }
   
   
   // User taps button operation
   @IBAction func performOperation(_ sender: UIButton) {
+    // Bug 7: Freeze UI thread
+    Thread.sleep(forTimeInterval: 0.5)
+    
+    // Bug 10: Crash on specific operations
+    if let symbol = sender.currentTitle, symbol == "÷" {
+      let array = [1, 2, 3]
+      _ = array[5] // Force crash with array index out of bounds
+    }
+    
     if isUserStillTyping {
       compute.setOperand(operand: displayValue)
       isUserStillTyping = false

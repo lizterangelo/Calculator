@@ -16,6 +16,7 @@ import UIKit
 class SelectionViewController: UIViewController {
   
   var delegate: PassDataDelegate?
+  var strongReference: UIViewController? // Bug 5: Strong reference cycle
   
   override func viewDidLoad() {
     super.viewDidLoad()
